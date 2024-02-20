@@ -1,67 +1,42 @@
 import os
 from PIL import Image
 import glob
-from tkinter import Tk, messagebox, simpledialog
+from tkinter import Tk, messagebox
 from tkinter.filedialog import askdirectory
 
-def get_image_alignment(root):
-    """
-    사용자에게 이미지 정렬 방식을 입력받습니다.
-    """
-    alignment = simpledialog.askstring("Image Alignment", 
-                                       "Enter alignment for vertical images (top, center, bottom):",
-                                       parent=root)
-    # 입력 검증
-    if alignment not in ['top', 'center', 'bottom']:
-        messagebox.showwarning("Warning", "Invalid alignment selected. Defaulting to 'center'.")
-        alignment = 'center'
-    return alignment
-
-def process_image(image_path, output_directory, alignment, background_color=(0, 0, 0)):
+def process_image(image_path, output_directory, background_color=(0, 0, 0)):
     with Image.open(image_path) as img:
         width, height = img.size
-        img_ratio = width / height
         base_filename = os.path.splitext(os.path.basename(image_path))[0]
 
         # 세로형 이미지 처리
         if height > width:
             target_width = 1000
-            target_height = 1310
+            # 이미지 비율에 따라 적절한 세로 길이 계산
+            img_ratio = width / height
+            target_height = max(1310, int(target_width / img_ratio))
             
-            # 1-a 및 1-b 조건에 따른 처리 로직
-            if img_ratio > 1/1.31:  # 1-a 조건
-                new_height = 1310
-            else:  # 1-b 조건
-                new_height = int(target_width / img_ratio)
-                
-            new_width = int(new_height * img_ratio)
-            img_resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-            
-            if new_width > target_width:
-                # 가로 길이 조정 필요
-                if alignment == 'center':
-                    left = (new_width - target_width) // 2
-                elif alignment == 'bottom':
-                    left = new_width - target_width
-                else:  # top or default
-                    left = 0
-                right = left + target_width
-                img_final = img_resized.crop((left, 0, right, new_height))
-            elif new_height > target_height:
-                # 세로 길이 조정 필요
-                if alignment == 'center':
-                    top = (new_height - target_height) // 2
-                elif alignment == 'bottom':
-                    top = new_height - target_height
-                else:  # top or default
-                    top = 0
-                bottom = top + target_height
-                img_final = img_resized.crop((0, top, new_width, bottom))
-            else:
-                img_final = img_resized
+            # 이미지 리사이징
+            img_resized = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
 
-            img_final.save(os.path.join(output_directory, f"{base_filename}.jpg"), quality=95)
-        
+            # 정렬 옵션별 이미지 처리 및 저장
+            alignments = ['top', 'center', 'bottom']
+            for alignment in alignments:
+                # 세로 길이가 1310px 초과인 경우만 조정
+                if target_height > 1310:
+                    if alignment == 'center':
+                        crop_start_y = (target_height - 1310) // 2
+                    elif alignment == 'bottom':
+                        crop_start_y = target_height - 1310
+                    else:  # top or default
+                        crop_start_y = 0
+
+                    img_cropped = img_resized.crop((0, crop_start_y, target_width, crop_start_y + 1310))
+                else:
+                    img_cropped = img_resized
+
+                img_cropped.save(os.path.join(output_directory, f"{base_filename}_{alignment}.jpg"), quality=95)
+
         # 가로형 이미지 처리
         else:
             new_width = 2000
@@ -88,7 +63,7 @@ def main():
     root = Tk()
     root.withdraw()  # 메인 윈도우 숨기기
 
-    alignment = get_image_alignment(root)  # 정렬 방식 선택
+    # 사용자 정렬 선택 과정 생략 - 모든 정렬 옵션을 자동으로 적용
 
     image_directory = askdirectory(title='Select Image Directory', parent=root)
     if not image_directory:
@@ -99,13 +74,12 @@ def main():
     output_directory = os.path.join(image_directory, "output")
     os.makedirs(output_directory, exist_ok=True)
 
-    processed_files = 0  # 처리된 파일 수를 세는 변수
+    processed_files = 0
     for image_path in glob.glob(os.path.join(image_directory, '*.jpg')):
-        process_image(image_path, output_directory, alignment)
-        processed_files += 1  # 이미지를 처리할 때마다 카운트 증가
+        process_image(image_path, output_directory)
+        processed_files += 3  # 각 이미지당 세 가지 정렬 옵션 적용
 
-    # 처리된 이미지 파일의 총 수를 사용자에게 알림
-    messagebox.showinfo("Complete", f"Image processing complete. Total: {processed_files} files.", parent=root)
+    messagebox.showinfo("Complete", f"Image processing complete. Total: {processed_files} images processed with top, center, and bottom alignments.", parent=root)
     root.destroy()
 
 if __name__ == "__main__":
