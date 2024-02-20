@@ -8,12 +8,14 @@ def process_image(image_path, output_directory, background_color=(0, 0, 0)):
     with Image.open(image_path) as img:
         width, height = img.size
         base_filename = os.path.splitext(os.path.basename(image_path))[0]
+                    
+        # 이미지 비율에 따라 적절한 세로 길이 계산
+        img_ratio = width / height
 
         # 세로형 이미지 처리
         if height > width:
             target_width = 1000
-            # 이미지 비율에 따라 적절한 세로 길이 계산
-            img_ratio = width / height
+
             target_height = max(1310, int(target_width / img_ratio))
             
             # 이미지 리사이징
