@@ -6,39 +6,48 @@ from tkinter.filedialog import askdirectory
 
 def process_image(image_path, output_directory, background_color=(0, 0, 0)):
     with Image.open(image_path) as img:
-        width, height = img.size
+        original_width, original_height = img.size
         base_filename = os.path.splitext(os.path.basename(image_path))[0]
-                    
-        # 이미지 비율에 따라 적절한 세로 길이 계산
-        img_ratio = width / height
 
         # 세로형 이미지 처리
-        if height > width:
+        if original_height > original_width:
+
+             # 원본 이미지의 비율을 유지하면서 가로 길이를 1000px로 설정
             target_width = 1000
+            img_ratio = original_height / original_width
+            resized_height = int(target_width * img_ratio)
+        
+            img_resized = img.resize((target_width, resized_height), Image.Resampling.LANCZOS)
 
-            target_height = max(1310, int(target_width / img_ratio))
-            
-            # 이미지 리사이징
-            img_resized = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
+            # 세로 길이에 따라 처리
+            if resized_height <= 1310:
+                # 세로 길이를 1310px에 맞추고, 가로 길이가 초과하는 경우 중앙 정렬로 자름
+                scale_factor = 1310 / resized_height
+                new_width = int(target_width * scale_factor)
+                new_height = 1310
 
-            # 정렬 옵션별 이미지 처리 및 저장
-            alignments = ['top', 'center', 'bottom']
-            for alignment in alignments:
-                # 세로 길이가 1310px 초과인 경우만 조정
-                if target_height > 1310:
+                img_scaled = img_resized.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                if new_width > 1000:
+                    crop_start_x = (new_width - 1000) // 2
+                    img_final = img_scaled.crop((crop_start_x, 0, crop_start_x + 1000, new_height))
+                else:
+                    img_final = img_scaled
+                
+                img_final.save(os.path.join(output_directory, f"{base_filename}_resized.jpg"), quality=95)
+            else:
+                # 세로 길이가 1310px 이상인 경우, 상단/중앙/하단 정렬로 이미지 저장
+                alignments = ['top', 'center', 'bottom']
+                for alignment in alignments:
                     if alignment == 'center':
-                        crop_start_y = (target_height - 1310) // 2
-                    elif alignment == 'bottom':
-                        crop_start_y = target_height - 1310
-                    else:  # top or default
+                        crop_start_y = (resized_height - 1310) // 2
+                    elif alignment == 'top':
                         crop_start_y = 0
+                    else:  # bottom
+                        crop_start_y = resized_height - 1310
 
                     img_cropped = img_resized.crop((0, crop_start_y, target_width, crop_start_y + 1310))
-                else:
-                    img_cropped = img_resized
-
-                img_cropped.save(os.path.join(output_directory, f"{base_filename}_{alignment}.jpg"), quality=95)
-
+                    img_cropped.save(os.path.join(output_directory, f"{base_filename}_{alignment}.jpg"), quality=95)
+                    
         # 가로형 이미지 처리
         else:
             new_width = 2000
