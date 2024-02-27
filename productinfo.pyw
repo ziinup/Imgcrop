@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import requests
 import os
 import time
-from datetime import datetime
+from selenium.common.exceptions import NoSuchElementException
 
 # 사용자로부터 URL 입력 받기
 url = input("상품 목록이 있는 웹 페이지 URL을 입력하세요: ")
@@ -36,23 +36,34 @@ try:
             image_urls = [first_image_url]  # 리스트로 변환하여 처리
         else:
             image_urls = []  # 이미지가 없는 경우 빈 리스트 할당
+        
         print(image_urls)
         
-        # 상품 URL 추출
-        product_url = product_wrapper.find_element(By.TAG_NAME, 'a').get_attribute('href')
-        print(product_url)
-
+       # 상품 URL 추출
+        try:
+            product_url = product_wrapper.find_element(By.TAG_NAME, 'a').get_attribute('href')
+        except NoSuchElementException:
+            product_url = ''  # 요소가 없는 경우 빈 문자열
+        
         # 상품명 추출
-        product_name = product_wrapper.find_element(By.CLASS_NAME, 'productName').text
+        try:
+            product_name = product_wrapper.find_element(By.CLASS_NAME, 'productName').text
+        except NoSuchElementException:
+            product_name = ''  # 요소가 없는 경우 빈 문자열
+        
         print(product_name)
         
         # 할인판매가 추출
-        discount_price = product_wrapper.find_element(By.CLASS_NAME, 'productDiscountPriceSpan').text
-        print(discount_price)
+        try:
+            discount_price = product_wrapper.find_element(By.CLASS_NAME, 'productDiscountPriceSpan').text
+        except NoSuchElementException:
+            discount_price = ''  # 요소가 없는 경우 빈 문자열
         
         # 판매가 추출
-        original_price = product_wrapper.find_element(By.CLASS_NAME, 'productPriceWithDiscountSpan').text
-        print(original_price)
+        try:
+            original_price = product_wrapper.find_element(By.CLASS_NAME, 'productPriceWithDiscountSpan').text
+        except NoSuchElementException:
+            original_price = ''  # 요소가 없는 경우 빈 문자열
         
         # DataFrame에 데이터 추가
         productdf = productdf._append({
