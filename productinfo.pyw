@@ -8,6 +8,7 @@ import requests
 import os
 import time
 from selenium.common.exceptions import NoSuchElementException
+import re
 
 # 사용자로부터 URL 입력 받기
 url = input("상품 목록이 있는 웹 페이지 URL을 입력하세요: ")
@@ -55,13 +56,17 @@ try:
         
         # 할인판매가 추출
         try:
-            discount_price = product_wrapper.find_element(By.CLASS_NAME, 'productDiscountPriceSpan').text
+            discount_price_text = product_wrapper.find_element(By.CLASS_NAME, 'productDiscountPriceSpan').text
+            # 숫자만 추출
+            discount_price = re.sub(r'\D', '', discount_price_text)
         except NoSuchElementException:
             discount_price = ''  # 요소가 없는 경우 빈 문자열
-        
+
         # 판매가 추출
         try:
-            original_price = product_wrapper.find_element(By.CLASS_NAME, 'productPriceWithDiscountSpan').text
+            original_price_text = product_wrapper.find_element(By.CLASS_NAME, 'productPriceWithDiscountSpan').text
+            # 숫자만 추출
+            original_price = re.sub(r'\D', '', original_price_text)
         except NoSuchElementException:
             original_price = ''  # 요소가 없는 경우 빈 문자열
         
