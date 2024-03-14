@@ -1,4 +1,4 @@
-#아임웹? 상품 크롤링
+#SIXSHOP 상품 크롱링
 
 import pandas as pd
 from selenium import webdriver

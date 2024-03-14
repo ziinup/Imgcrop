@@ -21,7 +21,7 @@ productdf = pd.DataFrame(columns=['상품이미지', '상품URL', '상품명', '
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
 
 # WebDriver 설정
-s = Service('D:\\chromedriver-win64\\chromedriver.exe')
+s = Service('D:\\Project\\Imgcrop\\chromedriver-win64\\chromedriver.exe')
 driver = webdriver.Chrome(service=s)
 driver.get(url)
 time.sleep(5)
@@ -91,7 +91,7 @@ finally:
 # 상품별 옵션 정보 추출
 for index, row in productdf.iterrows():
     # WebDriver 설정
-    s = Service('D:\\chromedriver-win64\\chromedriver.exe')
+    s = Service('D:\\Project\\Imgcrop\\chromedriver-win64\\chromedriver.exe')
     driver = webdriver.Chrome(service=s)
     driver.get(row['상품URL'])
     time.sleep(5)  # 상품 페이지 로딩 대기

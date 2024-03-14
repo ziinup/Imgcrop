@@ -5,28 +5,30 @@ from tkinter import Tk, messagebox
 from tkinter.filedialog import askdirectory
 
 def process_image(image_path, output_directory, background_color=(0, 0, 0)):
-    with Image.open(image_path) as img:
+     with Image.open(image_path) as img:
         original_width, original_height = img.size
         base_filename = os.path.splitext(os.path.basename(image_path))[0]
 
+        # 원본 이미지의 가로 대 세로 비율을 계산
+        img_ratio = original_width / original_height
+
         # 세로형 이미지 처리
         if original_height > original_width:
-
-             # 원본 이미지의 비율을 유지하면서 가로 길이를 1000px로 설정
             target_width = 1000
-            img_ratio = original_height / original_width
-            resized_height = int(target_width * img_ratio)
-        
+            resized_height = int(target_width / img_ratio)
+            
             img_resized = img.resize((target_width, resized_height), Image.Resampling.LANCZOS)
 
             # 세로 길이에 따라 처리
             if resized_height <= 1310:
-                # 세로 길이를 1310px에 맞추고, 가로 길이가 초과하는 경우 중앙 정렬로 자름
+                # 이미지 전체를 확대하여 세로 길이를 1310px에 맞추기
+                # 여기서 img_ratio 재정의가 필요 없으므로, 해당 라인을 제거하고 진행합니다.
                 scale_factor = 1310 / resized_height
                 new_width = int(target_width * scale_factor)
                 new_height = 1310
 
                 img_scaled = img_resized.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                # 가로 길이가 1000px 초과 시 중앙에서 잘라내기
                 if new_width > 1000:
                     crop_start_x = (new_width - 1000) // 2
                     img_final = img_scaled.crop((crop_start_x, 0, crop_start_x + 1000, new_height))
@@ -38,11 +40,10 @@ def process_image(image_path, output_directory, background_color=(0, 0, 0)):
                 # 세로 길이가 1310px 이상인 경우, 상단/중앙/하단 정렬로 이미지 저장
                 alignments = ['top', 'center', 'bottom']
                 for alignment in alignments:
+                    crop_start_y = 0
                     if alignment == 'center':
                         crop_start_y = (resized_height - 1310) // 2
-                    elif alignment == 'top':
-                        crop_start_y = 0
-                    else:  # bottom
+                    elif alignment == 'bottom':
                         crop_start_y = resized_height - 1310
 
                     img_cropped = img_resized.crop((0, crop_start_y, target_width, crop_start_y + 1310))
