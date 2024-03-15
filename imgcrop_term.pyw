@@ -14,7 +14,7 @@ def get_border_color(img):
     most_common_color = Counter(pixels).most_common(1)[0][0]
     return most_common_color
 
-def resize_image_with_padding(img_path, output_path, scale_factor=0.9, final_size=(1000, 1540)):
+def resize_image_with_padding(img_path, output_path, scale_factor=0.9, final_size=(960, 1280)):
     try:
         img = Image.open(img_path)
         border_color = get_border_color(img)

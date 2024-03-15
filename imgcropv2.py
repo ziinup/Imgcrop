@@ -5,7 +5,8 @@ from tkinter import Tk, messagebox
 from tkinter.filedialog import askdirectory
 
 def process_image(image_path, output_directory, background_color=(0, 0, 0)):
-     with Image.open(image_path) as img:
+
+    with Image.open(image_path) as img:
         original_width, original_height = img.size
         base_filename = os.path.splitext(os.path.basename(image_path))[0]
 
@@ -71,6 +72,7 @@ def process_image(image_path, output_directory, background_color=(0, 0, 0)):
             left_part.save(os.path.join(output_directory, f"{base_filename}_left.jpg"), quality=95)
             right_part.save(os.path.join(output_directory, f"{base_filename}_right.jpg"), quality=95)
 
+    
 def main():
     root = Tk()
     root.withdraw()  # 메인 윈도우 숨기기
@@ -87,9 +89,12 @@ def main():
     os.makedirs(output_directory, exist_ok=True)
 
     processed_files = 0
-    for image_path in glob.glob(os.path.join(image_directory, '*.jpg')):
-        process_image(image_path, output_directory)
-        processed_files += 3  # 각 이미지당 세 가지 정렬 옵션 적용
+    # 모든 지원하는 파일 확장자 목록, HEIC 포함
+    extensions = ['*.jpg', '*.jpeg', '*.png', '*.heic']
+    for extension in extensions:
+        for image_path in glob.glob(os.path.join(image_directory, extension)):
+            process_image(image_path, output_directory)
+            processed_files += 1  # 성공적으로 처리된 경우에만 카운트
 
     messagebox.showinfo("Complete", f"Image processing complete. Total: {processed_files} images processed with top, center, and bottom alignments.", parent=root)
     root.destroy()
