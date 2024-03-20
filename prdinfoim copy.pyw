@@ -1,4 +1,4 @@
-#아임웹? 상품 크롤링
+#아임웹 상품 크롤링
 
 import pandas as pd
 from selenium import webdriver
@@ -31,6 +31,7 @@ try:
     )
     shop_product_wrappers = product_list_wrapper.find_elements(By.CLASS_NAME, 'shop-item')
     for product_wrapper in shop_product_wrappers:
+        
         try:
             image_url = product_wrapper.find_element(By.TAG_NAME, 'img').get_attribute('src')
         except NoSuchElementException:

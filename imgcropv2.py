@@ -10,6 +10,14 @@ def process_image(image_path, output_directory, background_color=(0, 0, 0)):
         original_width, original_height = img.size
         base_filename = os.path.splitext(os.path.basename(image_path))[0]
 
+        # 이미지가 RGBA 모드인 경우 RGB 모드로 변환
+        if img.mode == 'RGBA':
+            # 투명도 채널을 제거하고, 배경색으로 채움
+            # 배경색이 제공되지 않았을 경우 흰색으로 기본 설정
+            rgb_img = Image.new('RGB', img.size, background_color)
+            rgb_img.paste(img, mask=img.split()[3])  # 3은 알파 채널
+            img = rgb_img
+
         # 원본 이미지의 가로 대 세로 비율을 계산
         img_ratio = original_width / original_height
 
