@@ -4,7 +4,7 @@ import os
 from tkinter import Tk, filedialog
 from PIL import Image
 
-def resize_images_in_folder(folder_path, quality=85, size_limit=1048576):
+def resize_images_in_folder(folder_path, quality=85, size_limit=900*1024):
     # folder_path 내의 모든 파일에 대해 반복
     for root, dirs, files in os.walk(folder_path):
         for file in files:
